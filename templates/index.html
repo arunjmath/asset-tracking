@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sprintzeal Asset Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap & AOS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+  <style>
+    body { background: #f5f7fa; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+
+    .hero {
+      background: linear-gradient(45deg, #ff6600, #ff944d);
+      color: white;
+      padding: 40px 0;
+      text-align: center;
+    }
+
+    .badge { font-size: 0.75rem; }
+    .status-badge.active { background-color: #28a745; }
+    .status-badge.inactive { background-color: #6c757d; }
+
+    .main-content {
+      flex: 1;
+      padding: 40px 20px;
+    }
+
+    .table-box {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    th, td {
+      vertical-align: middle !important;
+      text-align: center;
+    }
+
+    footer {
+      background: #343a40;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .navbar-brand img {
+      border-radius: 5px;
+    }
+
+    .btn {
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 1.8rem; }
+      .hero p { font-size: 1rem; }
+      .table-box { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container-fluid px-4">
+    <a href="/" class="navbar-brand fw-bold d-flex align-items-center">
+      <img src="{{ url_for('static', filename='logo.webp') }}" alt="Sprintzeal" height="40" class="me-2">
+      Sprintzeal
+    </a>
+
+    <form class="d-flex ms-auto" method="get" action="/">
+      <input class="form-control me-2" type="search" name="q" placeholder="Search Name/ID" value="{{ request.args.get('q', '') }}">
+      <button class="btn btn-primary">Search</button>
+    </form>
+
+    <div class="ms-3 d-flex flex-wrap gap-2">
+      <a href="/active" class="btn btn-outline-success">Active</a>
+      <a href="/inactive" class="btn btn-outline-danger">Inactive</a>
+      <a href="/" class="btn btn-outline-secondary">All</a>
+      <a href="/add" class="btn btn-outline-primary">+ Add</a>
+      <a href="/about" class="btn btn-outline-secondary">About</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<div class="hero" data-aos="fade-down">
+  <h1 class="display-5 fw-bold">Asset Tracker Dashboard</h1>
+  <p class="lead">All employee info in one organized table</p>
+  {% if view %}
+    <h4 class="text-white mt-3">{{ view }}</h4>
+  {% endif %}
+</div>
+
+<!-- Table Section -->
+<div class="main-content" data-aos="fade-up">
+  <div class="table-box">
+    <h4 class="mb-4 fw-bold text-center">Employee Details</h4>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Name</th>
+            <th>Emp ID</th>
+            <th>Official Email</th>
+            <th>Personal Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Shift</th>
+            <th>Status</th>
+            <th>Join</th>
+            <th>Leave</th>
+            <th>Laptop</th>
+            <th>Desktop</th>
+            <th>SIM</th>
+            <th>Phone Device</th>
+            <th>Assets</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp in employees %}
+          <tr>
+            <td>{{ emp.name or 'None' }}</td>
+            <td>{{ emp.employee_id or 'None' }}</td>
+            <td>{{ emp.official_email or 'None' }}</td>
+            <td>{{ emp.employee_email or 'None' }}</td>
+            <td>{{ emp.phone or 'None' }}</td>
+            <td>{{ emp.address or 'None' }}</td>
+            <td>{{ emp.shift or 'None' }}</td>
+            <td>
+              <span class="badge status-badge {{ 'active' if emp.is_active else 'inactive' }}">
+                {{ 'Active' if emp.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td>{{ emp.join_date or 'None' }}</td>
+            <td>{{ emp.last_date or 'None' }}</td>
+            <td>{{ emp.laptop_config or 'None' }}</td>
+            <td>{{ emp.desktop_name or 'None' }}</td>
+            <td>{{ emp.sim_number or 'None' }}</td>
+            <td>{{ emp.phone_device or 'None' }}</td>
+            <td>
+              {% if emp.assets %}
+                {% for item in emp.assets %}
+                  <span class="badge bg-warning text-dark">{{ item.capitalize() }}</span>
+                {% endfor %}
+              {% else %}
+                None
+              {% endif %}
+            </td>
+            <td>
+              <a href="/edit/{{ emp._id }}" class="btn btn-sm btn-outline-primary">Edit</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  &copy; 2025 Sprintzeal | All Rights Reserved
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+</body>
+</html>

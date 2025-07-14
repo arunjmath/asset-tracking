@@ -1,0 +1,46 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f9fb;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  color: #FF6600;
+}
+
+.hero {
+  background: url('/static/img/banner.jpg') no-repeat center center;
+  background-size: cover;
+  color: white;
+  padding: 80px 30px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.card {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+.asset-btn {
+  background-color: #FF6600;
+  color: white;
+  border: none;
+  margin: 2px;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #222;
+  color: white;
+  margin-top: 50px;
+}
