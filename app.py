@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+import math
 
 app = Flask(__name__)
-app.secret_key = 'supersecret'  # Used for sessions
+app.secret_key = 'supersecret'
 
 # MongoDB Setup
 MONGO_URI = "mongodb+srv://dummy:1234@cluster0.6wr4bga.mongodb.net/sprintzeal?retryWrites=true&w=majority&appName=Cluster0"
@@ -11,11 +12,11 @@ client = MongoClient(MONGO_URI)
 db = client.get_default_database()
 collection = db["employees"]
 
-# Admin credentials (hardcoded)
+# Admin credentials
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "1234"
 
-# Login route
+# Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -28,36 +29,59 @@ def login():
             flash('Invalid username or password', 'danger')
     return render_template('login.html')
 
-# Logout
 @app.route('/logout')
 def logout():
     session.pop('admin', None)
     return redirect(url_for('login'))
 
-# Protect this route
+# Home route with pagination
 @app.route('/')
 def home():
     if not session.get('admin'):
         return redirect(url_for('login'))
+
     query = request.args.get('q', '')
-    employees = search_employees(query)
-    return render_template('index.html', employees=employees, view='All Employees')
+    page = int(request.args.get('page', 1))
+    per_page = 5
+
+    filter_query = build_filter(query)
+    total = collection.count_documents(filter_query)
+    total_pages = math.ceil(total / per_page)
+
+    employees = collection.find(filter_query).skip((page - 1) * per_page).limit(per_page)
+    return render_template('index.html', employees=employees, view='All Employees', page=page, total_pages=total_pages, query=query)
 
 @app.route('/active')
 def active():
     if not session.get('admin'):
         return redirect(url_for('login'))
+
     query = request.args.get('q', '')
-    employees = search_employees(query, filter_by='active')
-    return render_template('index.html', employees=employees, view='Active Employees')
+    page = int(request.args.get('page', 1))
+    per_page = 5
+
+    filter_query = build_filter(query, filter_by='active')
+    total = collection.count_documents(filter_query)
+    total_pages = math.ceil(total / per_page)
+
+    employees = collection.find(filter_query).skip((page - 1) * per_page).limit(per_page)
+    return render_template('index.html', employees=employees, view='Active Employees', page=page, total_pages=total_pages, query=query)
 
 @app.route('/inactive')
 def inactive():
     if not session.get('admin'):
         return redirect(url_for('login'))
+
     query = request.args.get('q', '')
-    employees = search_employees(query, filter_by='inactive')
-    return render_template('index.html', employees=employees, view='Inactive Employees')
+    page = int(request.args.get('page', 1))
+    per_page = 5
+
+    filter_query = build_filter(query, filter_by='inactive')
+    total = collection.count_documents(filter_query)
+    total_pages = math.ceil(total / per_page)
+
+    employees = collection.find(filter_query).skip((page - 1) * per_page).limit(per_page)
+    return render_template('index.html', employees=employees, view='Inactive Employees', page=page, total_pages=total_pages, query=query)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
@@ -70,6 +94,7 @@ def add():
         data = {
             'name': request.form['name'],
             'employee_id': request.form['employee_id'],
+            'job_role': request.form.get('job_role'),
             'address': request.form['address'],
             'phone': request.form.get('phone'),
             'assets': request.form.getlist('assets'),
@@ -93,7 +118,6 @@ def add():
 def edit(emp_id):
     if not session.get('admin'):
         return redirect(url_for('login'))
-
     emp = collection.find_one({'_id': ObjectId(emp_id)})
     if request.method == 'POST':
         last_date = request.form.get('last_date') or None
@@ -102,6 +126,7 @@ def edit(emp_id):
         updated_data = {
             'name': request.form['name'],
             'employee_id': request.form['employee_id'],
+            'job_role': request.form.get('job_role'),
             'address': request.form['address'],
             'phone': request.form['phone'],
             'assets': request.form.getlist('assets'),
@@ -125,21 +150,19 @@ def edit(emp_id):
 def about():
     return render_template('about.html')
 
-# Search filter
-def search_employees(query, filter_by=None):
+# Utility: build search and filter query
+def build_filter(query, filter_by=None):
     filter_query = {}
     if filter_by == 'active':
         filter_query['is_active'] = True
     elif filter_by == 'inactive':
         filter_query['is_active'] = False
-
     if query:
         filter_query["$or"] = [
             {"name": {"$regex": query, "$options": "i"}},
             {"employee_id": {"$regex": query, "$options": "i"}}
         ]
-
-    return collection.find(filter_query)
+    return filter_query
 
 if __name__ == '__main__':
     app.run(debug=True)
