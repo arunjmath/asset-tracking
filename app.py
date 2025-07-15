@@ -37,7 +37,6 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# Home route with pagination
 @app.route('/')
 def home():
     if not session.get('username'):
@@ -93,9 +92,10 @@ def inactive():
 def add():
     if session.get('role') not in ['admin', 'hr']:
         return redirect(url_for('login'))
+
     if request.method == 'POST':
         last_date = request.form.get('last_date') or None
-        is_active = False if last_date else (request.form.get('is_active') == 'on')
+        is_active = False if last_date else request.form.get('is_active') == 'on'
 
         data = {
             'name': request.form['name'],
@@ -123,7 +123,7 @@ def add():
 @app.route('/edit/<emp_id>', methods=['GET', 'POST'])
 def edit(emp_id):
     if session.get('role') != 'admin':
-        flash('Access Denied', 'warning')
+        flash('Access Denied: Only Admin can edit records.', 'warning')
         return redirect(url_for('home'))
 
     emp = collection.find_one({'_id': ObjectId(emp_id)})
@@ -158,7 +158,7 @@ def edit(emp_id):
 def about():
     return render_template('about.html')
 
-# Utility
+# Utility: build search and filter query
 def build_filter(query, filter_by=None):
     filter_query = {}
     if filter_by == 'active':
@@ -173,4 +173,4 @@ def build_filter(query, filter_by=None):
     return filter_query
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000,debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
