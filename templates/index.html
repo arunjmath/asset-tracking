@@ -116,7 +116,9 @@
             <th>SIM</th>
             <th>Phone Device</th>
             <th>Assets</th>
-            <th>Action</th>
+            {% if session['role'] == 'admin' %}
+              <th>Action</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -151,38 +153,39 @@
                 None
               {% endif %}
             </td>
-            <td>
-              <a href="/edit/{{ emp._id }}" class="btn btn-sm btn-outline-primary">Edit</a>
-            </td>
+            {% if session['role'] == 'admin' %}
+              <td>
+                <a href="/edit/{{ emp._id }}" class="btn btn-sm btn-outline-primary">Edit</a>
+              </td>
+            {% endif %}
           </tr>
           {% endfor %}
         </tbody>
       </table>
 
-      <!-- Pagination Bar (Directly Below Table) -->
+      <!-- Pagination Below Table -->
       <div class="mt-4 d-flex justify-content-center">
         <nav aria-label="Page navigation">
           <ul class="pagination">
             {% if page > 1 %}
               <li class="page-item">
-                <a class="page-link" href="{{ url_for('home', page=page-1, q=query) }}">Previous</a>
+                <a class="page-link" href="{{ url_for(request.endpoint, page=page-1, q=query) }}">Previous</a>
               </li>
             {% endif %}
-
             {% for p in range(1, total_pages + 1) %}
               <li class="page-item {% if p == page %}active{% endif %}">
-                <a class="page-link" href="{{ url_for('home', page=p, q=query) }}">{{ p }}</a>
+                <a class="page-link" href="{{ url_for(request.endpoint, page=p, q=query) }}">{{ p }}</a>
               </li>
             {% endfor %}
-
             {% if page < total_pages %}
               <li class="page-item">
-                <a class="page-link" href="{{ url_for('home', page=page+1, q=query) }}">Next</a>
+                <a class="page-link" href="{{ url_for(request.endpoint, page=page+1, q=query) }}">Next</a>
               </li>
             {% endif %}
           </ul>
         </nav>
       </div>
+
     </div>
   </div>
 </div>

@@ -12,18 +12,21 @@ client = MongoClient(MONGO_URI)
 db = client.get_default_database()
 collection = db["employees"]
 
-# Admin credentials
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "1234"
+# User credentials
+USERS = {
+    "admin": {"password": "1234", "role": "admin"},
+    "hr": {"password": "hr123", "role": "hr"}
+}
 
-# Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         uname = request.form['username']
         pwd = request.form['password']
-        if uname == ADMIN_USERNAME and pwd == ADMIN_PASSWORD:
-            session['admin'] = True
+        user = USERS.get(uname)
+        if user and user["password"] == pwd:
+            session['username'] = uname
+            session['role'] = user['role']
             return redirect(url_for('home'))
         else:
             flash('Invalid username or password', 'danger')
@@ -31,13 +34,13 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('admin', None)
+    session.clear()
     return redirect(url_for('login'))
 
 # Home route with pagination
 @app.route('/')
 def home():
-    if not session.get('admin'):
+    if not session.get('username'):
         return redirect(url_for('login'))
 
     query = request.args.get('q', '')
@@ -49,11 +52,12 @@ def home():
     total_pages = math.ceil(total / per_page)
 
     employees = collection.find(filter_query).skip((page - 1) * per_page).limit(per_page)
-    return render_template('index.html', employees=employees, view='All Employees', page=page, total_pages=total_pages, query=query)
+    return render_template('index.html', employees=employees, view='All Employees',
+                           page=page, total_pages=total_pages, query=query, role=session.get('role'))
 
 @app.route('/active')
 def active():
-    if not session.get('admin'):
+    if not session.get('username'):
         return redirect(url_for('login'))
 
     query = request.args.get('q', '')
@@ -65,11 +69,12 @@ def active():
     total_pages = math.ceil(total / per_page)
 
     employees = collection.find(filter_query).skip((page - 1) * per_page).limit(per_page)
-    return render_template('index.html', employees=employees, view='Active Employees', page=page, total_pages=total_pages, query=query)
+    return render_template('index.html', employees=employees, view='Active Employees',
+                           page=page, total_pages=total_pages, query=query, role=session.get('role'))
 
 @app.route('/inactive')
 def inactive():
-    if not session.get('admin'):
+    if not session.get('username'):
         return redirect(url_for('login'))
 
     query = request.args.get('q', '')
@@ -81,15 +86,16 @@ def inactive():
     total_pages = math.ceil(total / per_page)
 
     employees = collection.find(filter_query).skip((page - 1) * per_page).limit(per_page)
-    return render_template('index.html', employees=employees, view='Inactive Employees', page=page, total_pages=total_pages, query=query)
+    return render_template('index.html', employees=employees, view='Inactive Employees',
+                           page=page, total_pages=total_pages, query=query, role=session.get('role'))
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
-    if not session.get('admin'):
+    if session.get('role') not in ['admin', 'hr']:
         return redirect(url_for('login'))
     if request.method == 'POST':
         last_date = request.form.get('last_date') or None
-        is_active = False if last_date else (request.form.get('is_active') == 'on' or request.form.get('active') == 'on')
+        is_active = False if last_date else (request.form.get('is_active') == 'on')
 
         data = {
             'name': request.form['name'],
@@ -116,8 +122,10 @@ def add():
 
 @app.route('/edit/<emp_id>', methods=['GET', 'POST'])
 def edit(emp_id):
-    if not session.get('admin'):
-        return redirect(url_for('login'))
+    if session.get('role') != 'admin':
+        flash('Access Denied', 'warning')
+        return redirect(url_for('home'))
+
     emp = collection.find_one({'_id': ObjectId(emp_id)})
     if request.method == 'POST':
         last_date = request.form.get('last_date') or None
@@ -150,7 +158,7 @@ def edit(emp_id):
 def about():
     return render_template('about.html')
 
-# Utility: build search and filter query
+# Utility
 def build_filter(query, filter_by=None):
     filter_query = {}
     if filter_by == 'active':
@@ -165,4 +173,4 @@ def build_filter(query, filter_by=None):
     return filter_query
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000,debug=True)
