@@ -51,6 +51,18 @@
     }
     .navbar-brand img { border-radius: 5px; }
     .btn { white-space: nowrap; }
+    a.text-link {
+      text-decoration: none;
+      color: #007bff;
+      font-weight: 500;
+    }
+    a.text-link:hover {
+      text-decoration: underline;
+    }
+    .dropdown-menu .dropdown-item:hover {
+      background-color: #f0f0f0;
+      font-weight: 600;
+    }
     @media (max-width: 768px) {
       .hero h1 { font-size: 1.8rem; }
       .hero p { font-size: 1rem; }
@@ -61,27 +73,34 @@
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-2">
   <div class="container-fluid px-4">
     <a href="/" class="navbar-brand fw-bold d-flex align-items-center">
       <img src="{{ url_for('static', filename='logo.webp') }}" alt="Sprintzeal" height="40" class="me-2">
     </a>
 
-    <form class="d-flex ms-auto" method="get" action="/">
-      <input class="form-control me-2" type="search" name="q" placeholder="Search Name/ID" value="{{ request.args.get('q', '') }}">
-      <button class="btn btn-primary">Search</button>
+    <form class="d-flex ms-auto me-3" method="get" action="/">
+      <input class="form-control form-control-sm me-2 rounded-3 border" style="min-width: 200px;" type="search" name="q" placeholder="Search Name/ID" value="{{ request.args.get('q', '') }}">
+      <button class="btn btn-primary btn-sm px-3 rounded-3">Search</button>
     </form>
 
-    <div class="ms-3 d-flex flex-wrap gap-2">
-      <a href="/active" class="btn btn-outline-success">Active</a>
-      <a href="/inactive" class="btn btn-outline-danger">Inactive</a>
-      <a href="/" class="btn btn-outline-secondary">All</a>
-      {% if session['role'] in ['admin', 'hr'] %}
-        <a href="/add" class="btn btn-outline-primary">+ Add</a>
-      {% endif %}
-      <a href="/about" class="btn btn-outline-secondary">About</a>
-      <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+    <!-- Filter Dropdown -->
+    <div class="dropdown me-2">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Filter
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item text-success fw-bold" href="/active">Active</a></li>
+        <li><a class="dropdown-item text-danger fw-bold" href="/inactive">Inactive</a></li>
+        <li><a class="dropdown-item text-dark fw-bold" href="/">All</a></li>
+      </ul>
     </div>
+
+    {% if session['role'] in ['admin', 'hr'] %}
+      <a href="/add" class="btn btn-outline-primary btn-sm me-2">+ Add</a>
+    {% endif %}
+    <a href="/about" class="btn btn-outline-secondary btn-sm me-2">About</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
   </div>
 </nav>
 
@@ -119,16 +138,19 @@
             <th>SIM</th>
             <th>Phone Device</th>
             <th>Assets</th>
-            {% if session['role'] == 'admin' %}
-              <th>Action</th>
-            {% endif %}
           </tr>
         </thead>
         <tbody>
           {% for emp in employees %}
           <tr>
             <td>{{ (page - 1) * 5 + loop.index }}</td>
-            <td>{{ emp.name or 'None' }}</td>
+            <td>
+              {% if session['role'] == 'admin' %}
+                <a href="/edit/{{ emp._id }}" class="text-link">{{ emp.name or 'None' }}</a>
+              {% else %}
+                {{ emp.name or 'None' }}
+              {% endif %}
+            </td>
             <td>{{ emp.job_role or 'None' }}</td>
             <td>{{ emp.employee_id or 'None' }}</td>
             <td>{{ emp.official_email or 'None' }}</td>
@@ -156,11 +178,6 @@
                 None
               {% endif %}
             </td>
-            {% if session['role'] == 'admin' %}
-              <td>
-                <a href="/edit/{{ emp._id }}" class="btn btn-sm btn-outline-primary">Edit</a>
-              </td>
-            {% endif %}
           </tr>
           {% endfor %}
         </tbody>
