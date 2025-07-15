@@ -39,7 +39,7 @@
         <div class="card-header text-center login-header">
           <img src="{{ url_for('static', filename='logo.webp') }}" alt="Sprintzeal Logo" class="mb-3" style="width: 60px;">
           <h4 class="mb-0">User Login</h4>
-          <small>Login as Admin or HR</small>
+          
         </div>
         <div class="card-body p-4">
           {% with messages = get_flashed_messages(with_categories=true) %}
@@ -51,8 +51,8 @@
           {% endwith %}
           <form method="POST">
             <div class="mb-3">
-              <label class="form-label">Username:</label>
-              <input type="text" name="username" class="form-control" placeholder="e.g. admin or hr" required>
+              <label class="form-label">Name:</label>
+              <input type="text" name="username" class="form-control" placeholder="Username" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Password:</label>
