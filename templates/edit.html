@@ -25,7 +25,7 @@
 
 <div class="container my-5" data-aos="zoom-in">
   <h2 class="text-center mb-4">Edit Employee</h2>
-  <form method="POST" class="form-section row g-3" data-aos="fade-up">
+  <form method="POST" enctype="multipart/form-data" class="form-section row g-3" data-aos="fade-up">
     <div class="col-md-6"><label class="form-label">Name *</label>
       <input type="text" name="name" class="form-control" value="{{ emp.name }}" required>
     </div>
@@ -33,9 +33,9 @@
       <input type="text" name="employee_id" class="form-control" value="{{ emp.employee_id }}" required>
     </div>
     <div class="col-md-6">
-  <label class="form-label">Job Role</label>
-  <input type="text" name="job_role" class="form-control" value="{{ emp.job_role or '' }}">
-</div>
+      <label class="form-label">Job Role</label>
+      <input type="text" name="job_role" class="form-control" value="{{ emp.job_role or '' }}">
+    </div>
 
     <div class="col-md-6"><label class="form-label">Official Email</label>
       <input type="email" name="official_email" class="form-control" value="{{ emp.official_email }}">
@@ -89,6 +89,21 @@
       </div>
       {% endfor %}
     </div>
+
+    <!-- Upload Document -->
+    <div class="col-md-12">
+      <label class="form-label">Upload New Document (PDF/DOC)</label>
+      <input type="file" name="document" class="form-control" accept=".pdf,.doc,.docx">
+    </div>
+
+    {% if emp.document %}
+    <div class="col-md-12">
+      <label class="form-label">Current Document:</label><br>
+      <a href="{{ url_for('static', filename='uploads/' + emp.document) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+        View Existing Document
+      </a>
+    </div>
+    {% endif %}
 
     <div class="col-12 text-center mt-4">
       <button type="submit" class="btn btn-primary px-5">Update</button>

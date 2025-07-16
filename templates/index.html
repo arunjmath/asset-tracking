@@ -7,67 +7,16 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
   <style>
-    body {
-      background: #f5f7fa;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .hero {
-      background: linear-gradient(45deg, #ff6600, #ff944d);
-      color: white;
-      padding: 40px 0;
-      text-align: center;
-    }
+    body { background: #f5f7fa; min-height: 100vh; display: flex; flex-direction: column; }
+    .hero { background: linear-gradient(45deg, #ff6600, #ff944d); color: white; padding: 40px 0; text-align: center; }
+    .main-content { flex: 1; padding: 40px 20px; }
+    .table-box { background-color: #ffffff; border-radius: 12px; padding: 25px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); border: 1px solid #dee2e6; }
+    th, td { vertical-align: middle !important; text-align: center; white-space: nowrap; }
+    footer { background: #343a40; color: #fff; padding: 10px; text-align: center; }
+    .btn { white-space: nowrap; }
     .badge { font-size: 0.75rem; }
     .status-badge.active { background-color: #28a745; }
     .status-badge.inactive { background-color: #6c757d; }
-    .main-content {
-      flex: 1;
-      padding: 40px 20px;
-    }
-    .table-box {
-      background-color: #ffffff;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      border: 1px solid #dee2e6;
-    }
-    .table thead th {
-      white-space: nowrap;
-      text-align: center;
-    }
-    th, td {
-      vertical-align: middle !important;
-      text-align: center;
-    }
-    footer {
-      background: #343a40;
-      color: #fff;
-      padding: 10px;
-      text-align: center;
-    }
-    .navbar-brand img { border-radius: 5px; }
-    .btn { white-space: nowrap; }
-    a.text-link {
-      text-decoration: none;
-      color: #007bff;
-      font-weight: 500;
-    }
-    a.text-link:hover {
-      text-decoration: underline;
-    }
-    .dropdown-menu .dropdown-item:hover {
-      background-color: #f0f0f0;
-      font-weight: 600;
-    }
-    @media (max-width: 768px) {
-      .hero h1 { font-size: 1.8rem; }
-      .hero p { font-size: 1rem; }
-      .table-box { padding: 15px; }
-    }
   </style>
 </head>
 <body>
@@ -75,32 +24,27 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-2">
   <div class="container-fluid px-4">
-    <a href="/" class="navbar-brand fw-bold d-flex align-items-center">
+    <a href="{{ url_for('employee.home') }}" class="navbar-brand fw-bold">
       <img src="{{ url_for('static', filename='logo.webp') }}" alt="Sprintzeal" height="40" class="me-2">
     </a>
-
-    <form class="d-flex ms-auto me-3" method="get" action="/">
-      <input class="form-control form-control-sm me-2 rounded-3 border" style="min-width: 200px;" type="search" name="q" placeholder="Search Name/ID" value="{{ request.args.get('q', '') }}">
-      <button class="btn btn-primary btn-sm px-3 rounded-3">Search</button>
+    <form class="d-flex ms-auto me-3" method="get" action="{{ url_for('employee.home') }}">
+      <input class="form-control form-control-sm me-2" type="search" name="q" placeholder="Search Name/ID" value="{{ request.args.get('q', '') }}">
+      <button class="btn btn-primary btn-sm">Search</button>
     </form>
-
-    <!-- Filter Dropdown -->
     <div class="dropdown me-2">
-      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Filter
-      </button>
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Filter</button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item text-success fw-bold" href="/active">Active</a></li>
-        <li><a class="dropdown-item text-danger fw-bold" href="/inactive">Inactive</a></li>
-        <li><a class="dropdown-item text-dark fw-bold" href="/">All</a></li>
+        <li><a class="dropdown-item text-success fw-bold" href="{{ url_for('employee.active') }}">Active</a></li>
+        <li><a class="dropdown-item text-danger fw-bold" href="{{ url_for('employee.inactive') }}">Inactive</a></li>
+        <li><a class="dropdown-item text-dark fw-bold" href="{{ url_for('employee.home') }}">All</a></li>
       </ul>
     </div>
-
     {% if session['role'] in ['admin', 'hr'] %}
-      <a href="/add" class="btn btn-outline-primary btn-sm me-2">+ Add</a>
+      <a href="{{ url_for('employee.add') }}" class="btn btn-outline-primary btn-sm me-2">+ Add</a>
     {% endif %}
-    <a href="/about" class="btn btn-outline-secondary btn-sm me-2">About</a>
-    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+    <!-- About Modal Trigger -->
+    <button class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#aboutModal">About</button>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
   </div>
 </nav>
 
@@ -108,17 +52,15 @@
 <div class="hero" data-aos="fade-down">
   <h1 class="display-5 fw-bold">Asset Tracker Dashboard</h1>
   <p class="lead">All employee info in one organized table</p>
-  {% if view %}
-    <h4 class="text-white mt-3">{{ view }}</h4>
-  {% endif %}
+  {% if view %}<h4 class="text-white mt-3">{{ view }}</h4>{% endif %}
 </div>
 
-<!-- Table Section -->
+<!-- Employee Table -->
 <div class="main-content" data-aos="fade-up">
   <div class="table-box">
     <h4 class="mb-4 fw-bold text-center">Employee Details</h4>
     <div class="table-responsive">
-      <table class="table table-striped table-hover align-middle mb-0">
+      <table class="table table-striped table-hover">
         <thead class="table-dark">
           <tr>
             <th>Sl No</th>
@@ -138,6 +80,7 @@
             <th>SIM</th>
             <th>Phone Device</th>
             <th>Assets</th>
+            <th>Document</th>
           </tr>
         </thead>
         <tbody>
@@ -146,7 +89,7 @@
             <td>{{ (page - 1) * 5 + loop.index }}</td>
             <td>
               {% if session['role'] == 'admin' %}
-                <a href="/edit/{{ emp._id }}" class="text-link">{{ emp.name or 'None' }}</a>
+                <a href="{{ url_for('employee.edit', emp_id=emp._id) }}" class="text-link">{{ emp.name or 'None' }}</a>
               {% else %}
                 {{ emp.name or 'None' }}
               {% endif %}
@@ -178,6 +121,13 @@
                 None
               {% endif %}
             </td>
+            <td>
+              {% if emp.document_url %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('static', filename=emp.document_url.split('static/')[-1]) }}" download>Download</a>
+              {% else %}
+                No File
+              {% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -188,9 +138,7 @@
         <nav aria-label="Page navigation">
           <ul class="pagination">
             {% if page > 1 %}
-              <li class="page-item">
-                <a class="page-link" href="{{ url_for(request.endpoint, page=page-1, q=query) }}">Previous</a>
-              </li>
+              <li class="page-item"><a class="page-link" href="{{ url_for(request.endpoint, page=page-1, q=query) }}">Previous</a></li>
             {% endif %}
             {% for p in range(1, total_pages + 1) %}
               <li class="page-item {% if p == page %}active{% endif %}">
@@ -198,9 +146,7 @@
               </li>
             {% endfor %}
             {% if page < total_pages %}
-              <li class="page-item">
-                <a class="page-link" href="{{ url_for(request.endpoint, page=page+1, q=query) }}">Next</a>
-              </li>
+              <li class="page-item"><a class="page-link" href="{{ url_for(request.endpoint, page=page+1, q=query) }}">Next</a></li>
             {% endif %}
           </ul>
         </nav>
@@ -209,16 +155,30 @@
   </div>
 </div>
 
-<!-- Footer -->
-<footer>
-  &copy; 2025 Sprintzeal | All Rights Reserved
-</footer>
+<!-- About Modal -->
+<div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="aboutModalLabel">About Sprintzeal Asset Tracker</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        This tool helps track employee assets, manage records, and store related documents efficiently. Designed and built by the Sprintzeal IT team.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-<!-- Scripts -->
+<!-- Footer -->
+<footer>&copy; 2025 Sprintzeal | All Rights Reserved</footer>
+
+<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-<script>
-  AOS.init();
-</script>
+<script>AOS.init();</script>
 </body>
 </html>

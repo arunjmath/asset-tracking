@@ -25,7 +25,7 @@
 
 <div class="container my-5" data-aos="fade-down">
   <h2 class="text-center mb-4">Add New Employee</h2>
-  <form method="POST" class="form-section row g-3" data-aos="fade-up">
+  <form method="POST" enctype="multipart/form-data" class="form-section row g-3" data-aos="fade-up">
     <!-- Basic fields -->
     <div class="col-md-6"><label class="form-label">Employee Name *</label>
       <input type="text" name="name" class="form-control" required>
@@ -34,10 +34,9 @@
       <input type="text" name="employee_id" class="form-control" required>
     </div>
     <div class="col-md-6">
-  <label class="form-label">Job Role</label>
-  <input type="text" name="job_role" class="form-control" placeholder="e.g. Developer, HR, Sales">
-</div>
-
+      <label class="form-label">Job Role</label>
+      <input type="text" name="job_role" class="form-control" placeholder="e.g. Developer, HR, Sales">
+    </div>
     <div class="col-md-6"><label class="form-label">Official Email</label>
       <input type="email" name="official_email" class="form-control" placeholder="name@domain.com">
     </div>
@@ -73,10 +72,17 @@
       <input type="text" name="phone_device" class="form-control">
     </div>
 
+    <!-- Upload Document -->
+    <div class="col-md-12"><label class="form-label">Upload Document (PDF/DOC)</label>
+      <input type="file" name="document" class="form-control" accept=".pdf,.doc,.docx">
+    </div>
+
     <!-- Job & Dates -->
     <div class="col-md-6"><label class="form-label">Shift</label>
       <select name="shift" class="form-select">
-        <option value="day">Day</option><option value="night">Night</option><option value="rotational">Rotational</option>
+        <option value="day">Day</option>
+        <option value="night">Night</option>
+        <option value="rotational">Rotational</option>
       </select>
     </div>
     <div class="col-md-6"><label class="form-label">Join Date *</label>
